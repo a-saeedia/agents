@@ -72,11 +72,16 @@
       "types": "./dist/vite.d.ts",
       "import": "./dist/vite.js",
       "require": "./dist/vite.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js",
+      "require": "./dist/node.js"
     }
   },
   "scripts": {
     "build": "tsx ./scripts/build.ts",
-    "test": "vitest run && vitest run --config vitest.runtime.config.ts && vitest run --config vitest.browser.config.ts",
+    "test": "vitest run && vitest run --config vitest.node.config.ts && vitest run --config vitest.runtime.config.ts && vitest run --config vitest.browser.config.ts",
     "test:e2e": "playwright test --config e2e/playwright.config.ts",
     "test:e2e:llm": "playwright test --config e2e/playwright.llm.config.ts",
     "test:watch": "vitest",

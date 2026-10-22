@@ -13,6 +13,9 @@ export default defineConfig({
     name: "workers",
     retry: 3,
     include: ["src/tests/**/*.test.ts"],
-    exclude: ["src/tests/**/*.browser.test.ts"]
+    exclude: [
+      "src/tests/**/*.browser.test.ts",
+      "src/tests/**/*.node.test.ts"
+    ]
   }
 });

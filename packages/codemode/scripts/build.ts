@@ -34,11 +34,12 @@ async function main() {
       "src/mcp.ts",
       "src/tanstack-ai.ts",
       "src/browser.ts",
-      "src/vite.ts"
+      "src/vite.ts",
+      "src/node.ts"
     ],
     deps: {
       skipNodeModulesBundle: true,
-      neverBundle: ["cloudflare:workers"]
+      neverBundle: ["cloudflare:workers", "node:child_process"]
     },
     format: "esm",
     sourcemap: true,
