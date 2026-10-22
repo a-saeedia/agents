@@ -236,16 +236,14 @@ export class MyAgent extends Think<Env> {
 }
 ```
 
-- The model writes CDP code as with `createBrowserTools`. `sessionId: "active"` points at the tab it's working in, and that tab is remembered across turns.
-- The code runs in a fresh Dynamic Worker from `loader`, with no network access: `cdp` is its only way out. The tool doesn't run on codemode, so it needs no `CodemodeRuntime` export.
+- The model writes CDP code against a `browser` global: `browser.cdp({ method, params, sessionId })` sends a command, `browser.attachToTarget({ targetId })` switches tabs, `browser.spec()` lists the protocol's domains and `browser.spec({ domain })` returns one, and `browser.getDebugLog()` shows recent traffic. `sessionId: "active"` points at the tab it's working in, and that tab is remembered across turns.
+- The code runs in a fresh Dynamic Worker from `loader`, with no network access: `browser` is its only way out. The tool doesn't run on codemode, so it needs no `CodemodeRuntime` export.
 - If several chats or users share one `Browser` (for example, many threads on one agent), pass each one's id as `scope`: `browserTool({ browser, loader, scope: threadId })`. Each scope keeps its own active tab, so one chat never drives another's page, while cookies and logins stay shared. Tools that leave `scope` out share one tab. Runs in the same scope wait for each other; runs in different scopes run in parallel.
-- When another chat closes the model's tab, or works in it too, the result's `notice` says so.
-- Tabs the page opens itself come back as `newTabs` in the result.
-- If the browser was lost (idle past `keepAliveMs`, closed, or crashed), the code still runs in a new browser and the result includes `restarted: true`.
+- The result's `notice` tells the model what happened to its browser: it was lost (idle past `keepAliveMs`, closed, or crashed) and the code ran in a new one, another chat closed its tab or works in it too, or the page opened new tabs.
 - Call `this.browser.liveView()` to give a person a Live View link into the same browser, and `this.browser.close()` to shut it down.
 - Set `keepAliveMs`, `recording`, and `guardrails` on `browserRun(binding, options)`. `keepAliveMs` is how long an idle browser stays alive: 10 minutes by default, up to 20. Browser Run bills the idle time, so a longer value keeps tabs and logins across longer gaps between turns but costs more when a conversation is abandoned. Use a different `name` for each extra browser on the same agent.
 - Each run times out after `timeoutMs` (default 60 seconds).
-- The tool's description covers the `cdp` API, the CDP mistakes models commonly make, and this time limit, so the model doesn't need a discovery pass first.
+- The tool's description covers the `browser` API, the CDP mistakes models commonly make, and this time limit, so the model doesn't need a discovery pass first.
 - A screenshot can be at most 1 MB, so a full-page screenshot of a long page fails. The model is told to capture the viewport or use JPEG instead.
 
 Only Chromium on a Browser Run binding is supported. It needs the same `LOADER` binding as `createBrowserTools`, but no `CodemodeRuntime` export.
@@ -288,7 +286,7 @@ this.registry.install({
 
 ### Driving the browser from your own code
 
-`browser.session()` gives you what the tool's `cdp` object is built on: one run's connection to the browser, with the same `sessionId: "active"` handling and error hints. Close it when the run ends to save the scope's active tab and get a report of what happened to the browser:
+`browser.session()` gives you what the tool's `browser` global is built on: one run's connection to the browser, with the same `sessionId: "active"` handling and error hints. Close it when the run ends to save the scope's active tab and get a report of what happened to the browser:
 
 ```ts
 const session = this.browser.session({ scope: threadId });
